@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Expenditure Summary — Rideekanda &amp; Brother's Land</title>
+<style>
+  :root{
+    --bg:#0f1419; --panel:#171e26; --panel2:#1e2833; --line:#2a3745;
+    --ink:#e8edf2; --mut:#93a1b0; --accent:#4aa3ff; --good:#3ecf8e;
+    --bad:#ff6b6b; --warn:#f5b642; --chip:#243444;
+    --exp:#4aa3ff; --inc:#3ecf8e; --don:#b98bff; --est:#f5b642;
+  }
+  @media (prefers-color-scheme: light){
+    :root{
+      --bg:#f4f6f9; --panel:#ffffff; --panel2:#f7f9fc; --line:#e2e8f0;
+      --ink:#1b2430; --mut:#5b6b7b; --chip:#eef2f7;
+    }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased}
+  a{color:var(--accent)}
+  .wrap{max-width:1120px;margin:0 auto;padding:20px 16px 80px}
+  header.top{display:flex;flex-wrap:wrap;align-items:flex-end;gap:12px;justify-content:space-between;margin-bottom:6px}
+  h1{font-size:22px;margin:0;font-weight:700;letter-spacing:-.2px}
+  .sub{color:var(--mut);font-size:13px;margin-top:2px}
+  .btn{background:var(--chip);border:1px solid var(--line);color:var(--ink);
+    padding:7px 12px;border-radius:9px;cursor:pointer;font-size:13px}
+  .btn:hover{border-color:var(--accent)}
+  .muted{color:var(--mut)}
+  /* tabs */
+  .tabs{display:flex;gap:6px;margin:18px 0 4px;border-bottom:1px solid var(--line)}
+  .tab{background:none;border:0;border-bottom:3px solid transparent;color:var(--mut);
+    padding:11px 18px;font-size:15px;font-weight:600;cursor:pointer;margin-bottom:-1px}
+  .tab:hover{color:var(--ink)}
+  .tab.on{color:var(--ink);border-bottom-color:var(--accent)}
+  .tab .amt{display:block;font-size:12px;font-weight:500;color:var(--mut);margin-top:1px}
+  .acct-h{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px;margin:16px 0 2px}
+  .acct-h h2{margin:0;font-size:19px}
+  .acct-h .badge{font-size:11px;color:var(--mut);border:1px solid var(--line);border-radius:20px;padding:2px 10px}
+  /* setup */
+  .setup{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;margin:14px 0}
+  .setup h2{margin:0 0 8px;font-size:16px}
+  .setup input{width:100%;padding:10px;border-radius:9px;border:1px solid var(--line);
+    background:var(--panel2);color:var(--ink);font-size:13px;margin:8px 0}
+  .setup ol{margin:8px 0 0;padding-left:20px;color:var(--mut);font-size:13px}
+  code{background:var(--chip);padding:1px 6px;border-radius:5px;font-size:12px}
+  /* kpis */
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin:14px 0}
+  .kpi{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+  .kpi .lab{color:var(--mut);font-size:12px;text-transform:uppercase;letter-spacing:.5px}
+  .kpi .val{font-size:24px;font-weight:700;margin-top:4px;letter-spacing:-.5px}
+  .kpi small{color:var(--mut);font-weight:500;font-size:12px}
+  .pos{color:var(--good)} .neg{color:var(--bad)}
+  /* section */
+  section{margin-top:22px}
+  .sec-h{display:flex;align-items:baseline;gap:10px;margin-bottom:10px;border-bottom:1px solid var(--line);padding-bottom:6px}
+  .sec-h h3{margin:0;font-size:16px}
+  .sec-h .tot{margin-left:auto;font-weight:700}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+  .card h4{margin:0 0 10px;font-size:15px}
+  .row{display:flex;justify-content:space-between;gap:8px;font-size:13px;padding:3px 0}
+  .row .k{color:var(--mut)}
+  .row.big{font-size:15px;font-weight:700;border-top:1px solid var(--line);margin-top:6px;padding-top:8px}
+  /* chart */
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px}
+  .bar-row{display:grid;grid-template-columns:70px 1fr 130px;align-items:center;gap:10px;padding:3px 0}
+  .bar-row .m{color:var(--mut);font-size:12px;font-variant-numeric:tabular-nums}
+  .bar-track{background:var(--panel2);border-radius:6px;height:20px;overflow:hidden;border:1px solid var(--line)}
+  .bar-fill{height:100%;background:var(--exp);border-radius:6px 0 0 6px}
+  .bar-row .v{text-align:right;font-variant-numeric:tabular-nums;font-size:13px}
+  .filters{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+  .filters .chip{background:var(--chip);border:1px solid var(--line);color:var(--ink);
+    padding:5px 10px;border-radius:20px;font-size:12px;cursor:pointer}
+  .filters .chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
+  /* tables */
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{padding:7px 8px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+  th:first-child,td:first-child{text-align:left;white-space:normal}
+  th{color:var(--mut);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.4px;position:sticky;top:0;background:var(--panel)}
+  .scroll{overflow-x:auto;border:1px solid var(--line);border-radius:14px;background:var(--panel)}
+  tbody tr:hover{background:var(--panel2)}
+  tfoot td{font-weight:700;border-top:2px solid var(--line)}
+  details{background:var(--panel);border:1px solid var(--line);border-radius:14px;margin-top:10px;overflow:hidden}
+  details>summary{cursor:pointer;padding:12px 16px;font-weight:600;list-style:none}
+  details>summary::-webkit-details-marker{display:none}
+  details>summary::before{content:"▸ ";color:var(--mut)}
+  details[open]>summary::before{content:"▾ "}
+  details .scroll{border:0;border-top:1px solid var(--line);border-radius:0}
+  .num{font-variant-numeric:tabular-nums}
+  .tag{font-size:11px;padding:1px 7px;border-radius:10px;border:1px solid var(--line)}
+  .tag.expense{color:var(--exp)} .tag.income{color:var(--inc)}
+  .tag.donation{color:var(--don)} .tag.estimate{color:var(--est)}
+  .err{background:var(--panel);border:1px solid var(--bad);border-radius:12px;padding:14px;color:var(--bad)}
+  .foot{color:var(--mut);font-size:12px;margin-top:26px;text-align:center}
+  @media print{.btn,.filters,.no-print{display:none!important}body{background:#fff}.tab:not(.on){display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>Expenditure Summary</h1>
+      <div class="sub" id="sub">Two separate accounts — Rideekanda &amp; Brother's Land</div>
+    </div>
+    <div class="no-print" style="display:flex;gap:8px">
+      <button class="btn" id="printBtn">Print / PDF</button>
+      <button class="btn" id="refreshBtn">↻ Refresh</button>
+    </div>
+  </header>
+
+  <div id="setup" class="setup" hidden>
+    <h2>One-time setup</h2>
+    <p class="muted">Paste the Apps Script web-app URL (ends in <code>/exec</code>). It is saved in this browser.</p>
+    <input id="epInput" placeholder="https://script.google.com/macros/s/.../exec" />
+    <button class="btn" id="saveEp">Save &amp; load</button>
+  </div>
+
+  <div id="status" class="muted" style="margin:16px 0">Loading…</div>
+  <div id="error" class="err" hidden></div>
+
+  <div id="tabsWrap" hidden>
+    <div class="tabs" id="siteTabs"></div>
+    <div id="app"></div>
+  </div>
+
+  <div class="foot" id="foot"></div>
+</div>
+
+<script>
+// ---- config ----------------------------------------------------------------
+var ENDPOINT = "https://script.google.com/macros/s/AKfycbz1grmzfDQCjvup3z3LM3HDFE8io5BTc3H2ePqdDBxvP4BlVr8kHJP3_xbS9iD_1wPUtQ/exec";
+var LS_KEY = "rk-expenditure-endpoint";
+
+function getEndpoint(){
+  var q = new URLSearchParams(location.search).get("endpoint");
+  return q || ENDPOINT || localStorage.getItem(LS_KEY) || "";
+}
+
+// ---- helpers ---------------------------------------------------------------
+var LKR = function(n){
+  if(n==null||isNaN(n)) return "—";
+  var neg = n<0; n=Math.abs(Math.round(n));
+  return (neg?"−":"")+"Rs "+n.toLocaleString("en-US");
+};
+var el = function(t,c,h){var e=document.createElement(t); if(c)e.className=c; if(h!=null)e.innerHTML=h; return e;};
+var MONTHS=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+function monthLabel(ym){ if(ym==="Undated")return "Undated"; var p=ym.split("-"); return MONTHS[+p[1]-1]+" "+p[0]; }
+function sum(a){return a.reduce(function(s,x){return s+x;},0);}
+function uniq(a){var s={},o=[]; a.forEach(function(x){if(!s[x]){s[x]=1;o.push(x);}}); return o;}
+function escapeHtml(s){return String(s||"").replace(/[&<>]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;"}[c];});}
+
+var DATA=null, ACTIVE_SITE=null, ACTIVE_PROJ="ALL";
+
+// ---- load ------------------------------------------------------------------
+function load(){
+  var ep=getEndpoint();
+  document.getElementById("setup").hidden = !!ep;
+  if(!ep){ document.getElementById("status").hidden=true; document.getElementById("tabsWrap").hidden=true; return; }
+  document.getElementById("status").hidden=false;
+  document.getElementById("status").textContent="Loading live data from Google Sheets…";
+  document.getElementById("error").hidden=true;
+  fetch(ep,{redirect:"follow"})
+    .then(function(r){ if(!r.ok) throw new Error("HTTP "+r.status); return r.json(); })
+    .then(function(j){
+      if(!j.ok && j.error) throw new Error(j.error);
+      DATA=j; render();
+    })
+    .catch(function(e){
+      document.getElementById("status").hidden=true;
+      var box=document.getElementById("error");
+      box.hidden=false;
+      box.innerHTML="Could not load data.<br><span class='muted'>"+String(e.message||e)+
+        "</span><br><br>Check the web-app URL and that access is set to <b>Anyone</b>.";
+    });
+}
+
+// ---- render (tabs = one per site = one account) ----------------------------
+function render(){
+  document.getElementById("status").hidden=true;
+  document.getElementById("tabsWrap").hidden=false;
+  var items=DATA.items||[];
+  var sites=uniq(items.map(function(i){return i.site;}));
+  if(sites.indexOf(ACTIVE_SITE)<0) ACTIVE_SITE=sites[0];
+
+  // tab bar — each tab shows the site name + its own total expenditure
+  var tabs=document.getElementById("siteTabs"); tabs.innerHTML="";
+  sites.forEach(function(site){
+    var spent=sum(items.filter(function(i){return i.site===site && i.kind==="expense";}).map(a=>a.amount));
+    var b=el("button","tab"+(site===ACTIVE_SITE?" on":""));
+    b.innerHTML=escapeHtml(site)+"<span class='amt'>"+LKR(spent)+" spent</span>";
+    b.onclick=function(){ if(ACTIVE_SITE!==site){ACTIVE_SITE=site; ACTIVE_PROJ="ALL"; render();} };
+    tabs.appendChild(b);
+  });
+
+  renderAccount(ACTIVE_SITE, items.filter(function(i){return i.site===ACTIVE_SITE;}));
+
+  document.getElementById("sub").textContent =
+    "Two separate accounts · currency "+(DATA.currency||"LKR");
+  var d=DATA.updated?new Date(DATA.updated):null;
+  document.getElementById("foot").innerHTML =
+    "Live from Google Sheets · last read "+(d?d.toLocaleString():"—")+
+    " · <a href='#' id='reCfg'>change data source</a>";
+  document.getElementById("reCfg").onclick=function(e){e.preventDefault();
+    localStorage.removeItem(LS_KEY); location.href=location.pathname;};
+}
+
+function renderAccount(site, items){
+  var exp=items.filter(function(i){return i.kind==="expense";});
+  var inc=items.filter(function(i){return i.kind==="income";});
+  var don=items.filter(function(i){return i.kind==="donation";});
+  var totExp=sum(exp.map(a=>a.amount));
+  var totInc=sum(inc.map(a=>a.amount));
+  var totDon=sum(don.map(a=>a.amount));
+  var net=(totInc+totDon)-totExp;
+  var projects=uniq(items.map(function(i){return i.project;}));
+
+  var app=document.getElementById("app"); app.innerHTML="";
+
+  // account header
+  var ah=el("div","acct-h");
+  ah.innerHTML="<h2>"+escapeHtml(site)+" account</h2>"+
+    "<span class='badge'>"+projects.length+" projects</span>";
+  app.appendChild(ah);
+
+  // KPIs (this account only)
+  var k=el("div","kpis");
+  k.appendChild(kpi("Total expenditure", LKR(totExp), exp.length+" payments"));
+  var incLine = (totInc?LKR(totInc)+" income":"") + (totInc&&totDon?" · ":"") + (totDon?LKR(totDon)+" donations":"");
+  k.appendChild(kpi("Income + donations", LKR(totInc+totDon), incLine||"none recorded"));
+  k.appendChild(kpi("Net balance", LKR(net), net>=0?"surplus":"shortfall", net>=0?"pos":"neg"));
+  var estT=sum(items.filter(i=>i.kind==="estimate").map(a=>a.amount));
+  k.appendChild(kpi(estT?"Estimated cost":"Projects", estT?LKR(estT):String(projects.length),
+    estT?"planned budget":"in this account"));
+  app.appendChild(k);
+
+  // monthly chart
+  var msec=el("section");
+  msec.appendChild(panelHeader("Monthly expenditure","monthNote"));
+  var filt=el("div","filters"); filt.id="projFilters";
+  filt.appendChild(chip("ALL","All projects"));
+  projects.forEach(function(p){ filt.appendChild(chip(p,p)); });
+  var mp=el("div","panel");
+  mp.appendChild(filt);
+  var bars=el("div"); bars.id="bars"; mp.appendChild(bars);
+  msec.appendChild(mp);
+  app.appendChild(msec);
+  drawBars(exp);
+
+  // project cards
+  var psec=el("section");
+  var ph=el("div","sec-h");
+  ph.innerHTML="<h3>Projects</h3><span class='tot'>Spent "+LKR(totExp)+"</span>";
+  psec.appendChild(ph);
+  var cards=el("div","cards");
+  projects.forEach(function(p){
+    var pi=items.filter(function(i){return i.project===p;});
+    var e=sum(pi.filter(i=>i.kind==="expense").map(a=>a.amount));
+    var pinc=sum(pi.filter(i=>i.kind==="income").map(a=>a.amount));
+    var pdn=sum(pi.filter(i=>i.kind==="donation").map(a=>a.amount));
+    var pest=sum(pi.filter(i=>i.kind==="estimate").map(a=>a.amount));
+    var bal=(pinc+pdn)-e;
+    var c=el("div","card");
+    var html="<h4>"+escapeHtml(p)+"</h4>"+row("Expenditure",LKR(e));
+    if(pinc) html+=row("Income",LKR(pinc));
+    if(pdn)  html+=row("Donations",LKR(pdn));
+    if(pest) html+=row("Estimated cost",LKR(pest));
+    if(pinc||pdn) html+="<div class='row big'><span>Balance</span><span class='"+
+      (bal>=0?"pos":"neg")+"'>"+LKR(bal)+"</span></div>";
+    c.innerHTML=html;
+    cards.appendChild(c);
+  });
+  psec.appendChild(cards);
+  app.appendChild(psec);
+
+  // monthly x project matrix
+  var xsec=el("section");
+  xsec.appendChild(secHeader("Monthly breakdown by project"));
+  var sc=el("div","scroll"); var tbl=el("table"); tbl.id="matrix"; sc.appendChild(tbl);
+  xsec.appendChild(sc); app.appendChild(xsec);
+  drawMatrix(exp, projects);
+
+  // audit
+  var asec=el("section");
+  asec.appendChild(secHeader("Line items (audit)"));
+  var au=el("div"); au.id="audit"; asec.appendChild(au); app.appendChild(asec);
+  drawAudit(items, projects);
+}
+
+function kpi(lab,val,small,cls){
+  var e=el("div","kpi");
+  e.innerHTML="<div class='lab'>"+lab+"</div><div class='val "+(cls||"")+"'>"+val+
+    "</div><small>"+(small||"")+"</small>";
+  return e;
+}
+function panelHeader(title,noteId){
+  var h=el("div","sec-h"); h.style.border="0"; h.style.padding="0"; h.style.marginBottom="10px";
+  h.innerHTML="<h3>"+title+"</h3><span class='muted' style='margin-left:auto;font-size:12px' id='"+noteId+"'></span>";
+  return h;
+}
+function secHeader(title){ var h=el("div","sec-h"); h.innerHTML="<h3>"+title+"</h3>"; return h; }
+function row(k,v){return "<div class='row'><span class='k'>"+k+"</span><span class='num'>"+v+"</span></div>";}
+function chip(id,label){
+  var c=el("span","chip"+(ACTIVE_PROJ===id?" on":""),escapeHtml(label));
+  c.onclick=function(){ ACTIVE_PROJ=id; drawBars(currentExp()); refreshChips(); };
+  return c;
+}
+function currentExp(){ return (DATA.items||[]).filter(function(i){return i.site===ACTIVE_SITE && i.kind==="expense";}); }
+function refreshChips(){
+  var chips=document.querySelectorAll("#projFilters .chip");
+  var projects=["ALL"].concat(uniq(currentExp().map(function(i){return i.project;})));
+  // rebuild "on" state cheaply
+  var all=document.querySelectorAll("#projFilters .chip");
+  all.forEach(function(c){ c.classList.remove("on"); });
+  var idx = ACTIVE_PROJ==="ALL"?0:projects.indexOf(ACTIVE_PROJ);
+  if(all[idx]) all[idx].classList.add("on");
+}
+
+// monthly bars (respect ACTIVE_PROJ within the current account)
+function drawBars(exp){
+  var rows=exp.filter(function(i){return ACTIVE_PROJ==="ALL"||i.project===ACTIVE_PROJ;});
+  var by={};
+  rows.forEach(function(i){ var m=i.month||"Undated"; by[m]=(by[m]||0)+i.amount; });
+  var keys=Object.keys(by).sort(function(a,b){
+    if(a==="Undated")return 1; if(b==="Undated")return -1; return a<b?-1:1;});
+  var max=Math.max.apply(null,keys.map(function(k){return by[k];}).concat([1]));
+  var box=document.getElementById("bars"); box.innerHTML="";
+  if(!keys.length){ box.innerHTML="<div class='muted'>No dated expenditure for this selection.</div>"; }
+  keys.forEach(function(kk){
+    var r=el("div","bar-row");
+    var pct=Math.max(2,(by[kk]/max)*100);
+    r.innerHTML="<span class='m'>"+monthLabel(kk)+"</span>"+
+      "<span class='bar-track'><span class='bar-fill' style='width:"+pct+"%'></span></span>"+
+      "<span class='v'>"+LKR(by[kk])+"</span>";
+    box.appendChild(r);
+  });
+  var undated=exp.filter(function(i){return !i.month;}).length;
+  var note=document.getElementById("monthNote");
+  if(note) note.textContent = undated?(undated+" undated payment"+(undated>1?"s":"")+" under “Undated”"):"";
+}
+
+// month x project matrix (this account)
+function drawMatrix(exp, projects){
+  var months=uniq(exp.map(function(i){return i.month||"Undated";})).sort(function(a,b){
+    if(a==="Undated")return 1; if(b==="Undated")return -1; return a<b?-1:1;});
+  var t=document.getElementById("matrix");
+  var head="<thead><tr><th>Month</th>";
+  projects.forEach(function(p){ head+="<th>"+escapeHtml(p)+"</th>"; });
+  head+="<th>Total</th></tr></thead>";
+  var body="<tbody>", colTot={}, grand=0;
+  months.forEach(function(m){
+    body+="<tr><td>"+monthLabel(m)+"</td>";
+    var rowTot=0;
+    projects.forEach(function(p){
+      var v=sum(exp.filter(function(i){return (i.month||"Undated")===m && i.project===p;}).map(a=>a.amount));
+      colTot[p]=(colTot[p]||0)+v; rowTot+=v;
+      body+="<td class='num'>"+(v?LKR(v):"·")+"</td>";
+    });
+    grand+=rowTot;
+    body+="<td class='num'><b>"+LKR(rowTot)+"</b></td></tr>";
+  });
+  body+="</tbody>";
+  var foot="<tfoot><tr><td>Total</td>";
+  projects.forEach(function(p){ foot+="<td class='num'>"+LKR(colTot[p]||0)+"</td>"; });
+  foot+="<td class='num'>"+LKR(grand)+"</td></tr></tfoot>";
+  t.innerHTML=head+body+foot;
+}
+
+// audit per project (this account)
+function drawAudit(items, projects){
+  var host=document.getElementById("audit"); host.innerHTML="";
+  projects.forEach(function(p){
+    var pi=items.filter(function(i){return i.project===p;})
+      .sort(function(a,b){ return (a.date||"9999")<(b.date||"9999")?-1:1; });
+    var e=sum(pi.filter(i=>i.kind==="expense").map(a=>a.amount));
+    var d=el("details");
+    var s=el("summary");
+    s.innerHTML=escapeHtml(p)+" <span class='muted' style='font-weight:400'>· "+pi.length+
+      " rows · spent "+LKR(e)+"</span>";
+    d.appendChild(s);
+    var rows="<div class='scroll'><table><thead><tr><th>Date</th><th>Type</th>"+
+      "<th>Description</th><th>Amount</th></tr></thead><tbody>";
+    pi.forEach(function(i){
+      rows+="<tr><td class='num'>"+(i.date||"—")+"</td>"+
+        "<td><span class='tag "+i.kind+"'>"+i.kind+"</span></td>"+
+        "<td>"+escapeHtml(i.desc)+(i.note?" <span class='muted'>("+escapeHtml(i.note)+")</span>":"")+"</td>"+
+        "<td class='num'>"+LKR(i.amount)+"</td></tr>";
+    });
+    rows+="</tbody></table></div>";
+    var wrap=el("div"); wrap.innerHTML=rows; d.appendChild(wrap);
+    host.appendChild(d);
+  });
+}
+
+// ---- events ----------------------------------------------------------------
+document.getElementById("saveEp").onclick=function(){
+  var v=document.getElementById("epInput").value.trim();
+  if(v){ localStorage.setItem(LS_KEY,v); load(); }
+};
+document.getElementById("refreshBtn").onclick=load;
+document.getElementById("printBtn").onclick=function(){window.print();};
+load();
+</script>
+</body>
+</html>
