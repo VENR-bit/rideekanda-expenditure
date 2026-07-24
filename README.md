@@ -1,8 +1,12 @@
-# Expenditure Summary — Rideekanda & Brother's Lands
+# Expenditure Summary — Rideekanda & Brother's Land
 
-A live dashboard of ongoing construction expenditure, read directly from three
-Google Sheets. When you add rows to any sheet, the webpage shows the new numbers
-on the next refresh.
+**Live site:** https://venr-bit.github.io/rideekanda-expenditure/
+
+A live dashboard of ongoing construction expenditure, read directly from Google
+Sheets. Rideekanda and Brother's Land are shown as **two separate accounts** (one
+tab each). When you add rows to a sheet, the page shows the new numbers on refresh.
+
+Hosted on GitHub Pages from the `docs/` folder (main branch).
 
 ## What it shows
 - **Total expenditure** (all projects), income + donations, and net balance.
