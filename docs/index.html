@@ -215,7 +215,6 @@ function renderAccount(site, items){
   var totExp=sum(exp.map(a=>a.amount));
   var totInc=sum(inc.map(a=>a.amount));
   var totDon=sum(don.map(a=>a.amount));
-  var net=(totInc+totDon)-totExp;
   var projects=uniq(items.map(function(i){return i.project;}));
 
   var app=document.getElementById("app"); app.innerHTML="";
@@ -231,10 +230,6 @@ function renderAccount(site, items){
   k.appendChild(kpi("Total expenditure", LKR(totExp), exp.length+" payments"));
   var incLine = (totInc?LKR(totInc)+" income":"") + (totInc&&totDon?" · ":"") + (totDon?LKR(totDon)+" donations":"");
   k.appendChild(kpi("Income + donations", LKR(totInc+totDon), incLine||"none recorded"));
-  k.appendChild(kpi("Net balance", LKR(net), net>=0?"surplus":"shortfall", net>=0?"pos":"neg"));
-  var estT=sum(items.filter(i=>i.kind==="estimate").map(a=>a.amount));
-  k.appendChild(kpi(estT?"Estimated cost":"Projects", estT?LKR(estT):String(projects.length),
-    estT?"planned budget":"in this account"));
   app.appendChild(k);
 
   // monthly chart
