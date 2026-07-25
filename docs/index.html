@@ -230,6 +230,8 @@ function renderAccount(site, items){
   k.appendChild(kpi("Total expenditure", LKR(totExp), exp.length+" payments"));
   var incLine = (totInc?LKR(totInc)+" income":"") + (totInc&&totDon?" · ":"") + (totDon?LKR(totDon)+" donations":"");
   k.appendChild(kpi("Income + donations", LKR(totInc+totDon), incLine||"none recorded"));
+  var net=(totInc+totDon)-totExp;
+  k.appendChild(kpi("Net balance", LKR(net), net>=0?"surplus":"shortfall", net>=0?"pos":"neg"));
   app.appendChild(k);
 
   // monthly chart
