@@ -66,12 +66,14 @@ the file). It reloads live data every time you open or hit **Refresh**.
   date column, so its rows are stamped **June 2026** (`defaultDate` in `SOURCES`).
   Currently **Rs 383,000** (hardware 188,000 + rubble 55,000 + labour 28,000 +
   labour 112,000).
-- **Cacilia's Kuty** — its source (`1XlL45…`) is a mixed estimate/BOQ that can't
-  be totalled reliably, so it is entered in `Code.gs` as a **fixed Rs 900,082**
-  (the sheet's "EXPENDITURE" block, expenditure only), dated June 2026. **When you
-  create a clean dedicated sheet for it**, replace the fixed block in `SOURCES`
-  with the commented `ledger` entry right above it (paste the new sheet id) and it
-  will update live like Wall Construction.
+- **Cacilia's Kuty** (`1XlL45…`) — read **live**. Its BOQ sheet has an
+  "EXPENDITURE" block whose header row carries `G/TOTAL` (expenditure grand total),
+  `DONATIONS`, and `BALANCE`. `parseCacilia()` finds that block, sums the per-line
+  expenses (the column just left of `G/TOTAL`), and reads the `DONATIONS` total.
+  It cross-checks the line-item sum against the sheet's own `G/TOTAL` and, if they
+  differ, adds a small reconciliation line so the project always matches the sheet.
+  Undated rows are stamped June 2026 (`defaultDate`). Currently ≈ Rs 1,234,722
+  spent, Rs 1,653,880 donations, +Rs 419,158 balance.
 - The Building tab's payments are grouped into blocks that end with a
   "BALANCE AS AT <date>" row; undated items in a block inherit that block's date.
   Real payments with no description (e.g. Rs 50,000 on 4.3.2026) are still counted.

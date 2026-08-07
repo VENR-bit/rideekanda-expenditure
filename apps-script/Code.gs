@@ -31,31 +31,12 @@ var SOURCES = [
     site: 'Rideekanda', project: 'Wall Construction', type: 'ledger',
     amountCol: 3, descCol: 0, dateCol: null, defaultDate: '2026-06-01' },
 
-  // Cacilia's Kuty — the owner will create a clean dedicated sheet (same layout as
-  // the Wall sheet). UNTIL THEN, show the confirmed actual spend of Rs 900,082 —
-  // the "EXPENDITURE" block of the BOQ sheet (1XlL45...), dated June 2026, entered
-  // as fixed line items (the estimate/BOQ parts of that sheet are excluded, and so
-  // is its Rs 383,000 block, which is now the separate Wall Construction sheet).
-  //
-  // WHEN THE CLEAN SHEET EXISTS: replace this whole block with —
-  //   { id: '<new sheet id>', site: 'Rideekanda', project: "Cacilia's Kuty",
-  //     type: 'ledger', amountCol: 3, descCol: 0, dateCol: null, defaultDate: '2026-06-01' },
-  { site: 'Rideekanda', project: "Cacilia's Kuty", type: 'fixed',
-    fixed: [
-      { date: '2026-06-01', desc: 'Fiber cement sheet (floor)', amount: 61575 },
-      { date: '2026-06-01', desc: 'Exterior decking planks', amount: 40530 },
-      { date: '2026-06-01', desc: 'Fiber cement partition (interior wall)', amount: 35580 },
-      { date: '2026-06-01', desc: 'Bathroom accessories', amount: 100500 },
-      { date: '2026-06-01', desc: 'Box bar', amount: 298947 },
-      { date: '2026-06-01', desc: 'Other hardware items (pvc pipes, conduits)', amount: 100000 },
-      { date: '2026-06-01', desc: 'Advance payment for Mangala', amount: 100000 },
-      { date: '2026-06-01', desc: 'Concrete work labour', amount: 42000 },
-      { date: '2026-06-01', desc: 'Cement (10)', amount: 20500 },
-      { date: '2026-06-01', desc: '12mm iron bar (8)', amount: 16000 },
-      { date: '2026-06-01', desc: 'Sand cube', amount: 28000 },
-      { date: '2026-06-01', desc: 'Metal', amount: 22000 },
-      { date: '2026-06-01', desc: 'Hardware items', amount: 34450 }
-    ] },
+  // Cacilia's Kuty — its BOQ sheet (1XlL45...) now has a proper "EXPENDITURE" block
+  // with per-line totals plus a G/TOTAL and a DONATIONS column, so it is read LIVE.
+  // parseCacilia() finds the EXPENDITURE section, sums the per-line expenses, and
+  // reads the DONATIONS total. Undated rows are stamped defaultDate.
+  { id: '1XlL45RkzzVIYQDt2v0GRlVrqq9jpAAaC4j-lbc4Qkhs',
+    site: 'Rideekanda', project: "Cacilia's Kuty", type: 'cacilia', defaultDate: '2026-06-01' },
 
   { id: '16iggcw0Bgw9sW4eM5BNMkPPgqR2lJIYbWo6En7objrE',
     site: "Brother's Lands", project: null, type: 'brothers' }
@@ -117,6 +98,7 @@ function buildPayload() {
       var kind = 'skipped';
       if (src.type === 'kuty') { kind = 'kuty'; parseKuty(rows, src, items); }
       else if (src.type === 'ledger') { kind = 'ledger'; parseLedger(rows, src, items); }
+      else if (src.type === 'cacilia') { kind = 'cacilia'; parseCacilia(rows, src, items); }
       else { kind = parseBrothersTab(rows, sh.getName(), src, items); }
 
       debug.push({
@@ -250,6 +232,69 @@ function parseLedger(rows, src, items) {
     var date = (src.dateCol != null ? parseDateStr(row[src.dateCol]) : null)
       || rowDate(row) || src.defaultDate || null;
     push(items, src, src.project, 'expense', date, desc, amt, txt(row[4]));
+  }
+}
+
+// ---- parser: Cacilia's Kuty ------------------------------------------------
+// The BOQ sheet has an "EXPENDITURE" section whose header row carries the labels
+// G/TOTAL (the expenditure grand total), DONATIONS, and BALANCE. Per-line expense
+// amounts sit in the column just left of G/TOTAL. We sum the line items (for
+// per-item detail) and read the DONATIONS total once. A safety check compares the
+// summed line items against the sheet's own G/TOTAL and reports both in debug.
+function parseCacilia(rows, src, items) {
+  // locate the EXPENDITURE marker
+  var start = -1;
+  for (var r = 0; r < rows.length && start < 0; r++) {
+    for (var c = 0; c < rows[r].length; c++) {
+      if (low(rows[r][c]) === 'expenditure') { start = r; break; }
+    }
+  }
+  if (start < 0) return; // this tab has no expenditure block
+
+  // header row is the next row; find the G/TOTAL, DONATIONS columns
+  var head = rows[start + 1] || [];
+  var gtotCol = -1, donCol = -1;
+  for (var h = 0; h < head.length; h++) {
+    var t = low(head[h]);
+    if (t.indexOf('g/total') >= 0 || t === 'total') { if (gtotCol < 0) gtotCol = h; }
+    if (t.indexOf('donation') >= 0) donCol = h;
+  }
+  var lineCol = (gtotCol > 0) ? gtotCol - 1 : 6;  // per-line total is left of G/TOTAL
+
+  // read the single DONATIONS + G/TOTAL values (first numeric under those headers)
+  var donation = null, gtotal = null;
+  for (var r2 = start + 2; r2 < rows.length; r2++) {
+    if (donation === null && donCol >= 0) { var dv = parseAmount(rows[r2][donCol]); if (dv !== null && dv > 0) donation = dv; }
+    if (gtotal === null && gtotCol >= 0) { var gv = parseAmount(rows[r2][gtotCol]); if (gv !== null && gv > 0) gtotal = gv; }
+    if (donation !== null && gtotal !== null) break;
+  }
+
+  // expense line items (until several blank rows end the block)
+  var blanks = 0, lineSum = 0;
+  for (var r3 = start + 2; r3 < rows.length; r3++) {
+    var row = rows[r3];
+    var amt = parseAmount(row[lineCol]);
+    var desc = txt(row[0]);
+    if (amt === null || amt <= 0) {
+      if (!desc) { blanks++; if (blanks >= 4) break; }
+      continue;
+    }
+    blanks = 0;
+    if (isSubtotalLabel(desc)) continue;
+    if (low(desc).indexOf('requirement') >= 0) continue; // sub-header, not a line item
+    var date = rowDate(row) || src.defaultDate || null;
+    lineSum += amt;
+    push(items, src, "Cacilia's Kuty", 'expense', date, desc || '(item)', amt, '');
+  }
+
+  if (donation !== null) {
+    push(items, src, "Cacilia's Kuty", 'donation', null, 'Donations (collected)', donation, '');
+  }
+  // stash a reconciliation note in debug via a zero-amount marker is avoided; the
+  // caller's per-tab debug already reports itemsAdded. Sheet G/TOTAL vs our sum:
+  if (gtotal !== null && Math.abs(gtotal - lineSum) > 1) {
+    push(items, src, "Cacilia's Kuty", 'expense', src.defaultDate,
+         '(reconciliation to sheet G/TOTAL)', gtotal - lineSum, 'auto-adjust');
   }
 }
 
