@@ -24,12 +24,13 @@ var SOURCES = [
   { id: '1A_S8aJV3_UKn9jD0atazr1elKibUfUmMQ3aJI1r6uRE',
     site: 'Rideekanda', project: 'Library Cafe', type: 'kuty' },
 
-  // Wall Construction — its own sheet, done June 2026. Clean single-table ledger:
-  // [description, qty, unit price, total, note] with the amount in column D (idx 3)
-  // and no date column, so undated rows are stamped defaultDate.
+  // Wall Construction — single-table ledger:
+  // [description, qty, unit price, total(D=3), note, TOTAL EXPENDITURE, INCOME(6), TOTAL INCOME].
+  // Per-line expenses in col D (idx 3); a single INCOME total sits in col idx 6.
+  // No per-row date, so undated rows are stamped defaultDate.
   { id: '19bDSzAcuBuoFeibXvVQzve-W_bhMDIy6dhI4KERYXE0',
     site: 'Rideekanda', project: 'Wall Construction', type: 'ledger',
-    amountCol: 3, descCol: 0, dateCol: null, defaultDate: '2026-06-01' },
+    amountCol: 3, descCol: 0, dateCol: null, incomeCol: 6, defaultDate: '2026-06-01' },
 
   // Cacilia's Kuty — its BOQ sheet (1XlL45...) now has a proper "EXPENDITURE" block
   // with per-line totals plus a G/TOTAL and a DONATIONS column, so it is read LIVE.
@@ -231,6 +232,17 @@ function parseLedger(rows, src, items) {
     var date = (src.dateCol != null ? parseDateStr(row[src.dateCol]) : null)
       || rowDate(row) || src.defaultDate || null;
     push(items, src, src.project, 'expense', date, desc, amt, txt(row[4]));
+  }
+
+  // optional single INCOME total (first positive number in the income column)
+  if (src.incomeCol != null) {
+    for (var k = 0; k < rows.length; k++) {
+      var iv = parseAmount(rows[k][src.incomeCol]);
+      if (iv !== null && iv > 0) {
+        push(items, src, src.project, 'income', null, 'Income (received)', iv, '');
+        break;
+      }
+    }
   }
 }
 

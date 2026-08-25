@@ -62,10 +62,11 @@ the file). It reloads live data every time you open or hit **Refresh**.
 - **Library Cafe** (`1A_S8…`) — the deck / library / digital-screen sheet with
   donor donations. Shows expenditure, donations, and balance.
 - **Wall Construction** (`19bDSz…`) — its own clean sheet, read live. Simple
-  ledger (description / qty / price / total); total column is D. The sheet has no
-  date column, so its rows are stamped **June 2026** (`defaultDate` in `SOURCES`).
-  Currently **Rs 383,000** (hardware 188,000 + rubble 55,000 + labour 28,000 +
-  labour 112,000).
+  ledger: per-line expenses in column D (idx 3), plus a single **INCOME** total in
+  column idx 6 (`incomeCol`) that the parser emits as the project's income (the
+  sheet's "TOTAL INCOME" column is the income-minus-expenditure balance, which the
+  dashboard computes itself). The sheet has no per-row date, so rows are stamped
+  **June 2026** (`defaultDate`).
 - **Cacilia's Kuty** (`1XlL45…`) — read **live**. Its BOQ sheet has an
   "EXPENDITURE" block whose header row carries `G/TOTAL` (expenditure grand total),
   `DONATIONS`, and `BALANCE`. `parseCacilia()` finds that block, sums the per-line
