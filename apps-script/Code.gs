@@ -226,8 +226,7 @@ function parseLedger(rows, src, items) {
     var row = rows[r];
     var desc = txt(row[descCol]);
     var amt = parseAmount(row[amountCol]);
-    if (!desc || amt === null || amt <= 0) continue;   // skips the total row
-    if (isSubtotalLabel(desc)) continue;
+    if (!desc || amt === null || amt <= 0) continue;   // blank-desc total row skipped here
     if (low(desc) === 'description' || low(desc) === 'item') continue; // header
     var date = (src.dateCol != null ? parseDateStr(row[src.dateCol]) : null)
       || rowDate(row) || src.defaultDate || null;
@@ -280,7 +279,6 @@ function parseCacilia(rows, src, items) {
       continue;
     }
     blanks = 0;
-    if (isSubtotalLabel(desc)) continue;
     if (low(desc).indexOf('requirement') >= 0) continue; // sub-header, not a line item
     var date = rowDate(row) || src.defaultDate || null;
     lineSum += amt;
@@ -308,8 +306,10 @@ function parseKuty(rows, src, items) {
     var total = parseAmount(row[3]);
     var date = parseDateStr(row[4]) || null;
 
-    // expense line
-    if (desc && total !== null && !isSubtotalLabel(desc)) {
+    // expense line. NB: don't filter by isSubtotalLabel here — the sheet's own
+    // total row has a blank description (already excluded by the `desc &&` check),
+    // and a real item like "Balance payment for Carpenter" must NOT be dropped.
+    if (desc && total !== null) {
       push(items, src, 'Kuty', 'expense', date, desc, total, txt(row[4]));
     }
     // donation (amount in col5, donor name col6) — independent of expense
