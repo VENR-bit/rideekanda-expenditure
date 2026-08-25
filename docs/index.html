@@ -170,6 +170,15 @@ function sum(a){return a.reduce(function(s,x){return s+x;},0);}
 function uniq(a){var s={},o=[]; a.forEach(function(x){if(!s[x]){s[x]=1;o.push(x);}}); return o;}
 function escapeHtml(s){return String(s||"").replace(/[&<>]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;"}[c];});}
 
+// Brother's Land account counts ONLY the Building (Income & Expenditure) sheet —
+// the land tabs (Maligawa/Sinnakkara/Homagama) and the INCOME tab are ignored.
+function allItems(){
+  return ((DATA&&DATA.items)||[]).filter(function(i){
+    if(i.site==="Brother's Lands" && i.project!=="Building Construction") return false;
+    return true;
+  });
+}
+
 var DATA=null, ACTIVE_SITE=null, ACTIVE_PROJ="ALL";
 
 // ---- load ------------------------------------------------------------------
@@ -199,7 +208,7 @@ function load(){
 function render(){
   document.getElementById("status").hidden=true;
   document.getElementById("tabsWrap").hidden=false;
-  var items=DATA.items||[];
+  var items=allItems();
   var sites=uniq(items.map(function(i){return i.site;}));
   if(sites.indexOf(ACTIVE_SITE)<0) ACTIVE_SITE=sites[0];
 
@@ -323,7 +332,7 @@ function chip(id,label){
   c.onclick=function(){ ACTIVE_PROJ=id; drawBars(currentExp()); refreshChips(); };
   return c;
 }
-function currentExp(){ return (DATA.items||[]).filter(function(i){return i.site===ACTIVE_SITE && i.kind==="expense";}); }
+function currentExp(){ return allItems().filter(function(i){return i.site===ACTIVE_SITE && i.kind==="expense";}); }
 function refreshChips(){
   var chips=document.querySelectorAll("#projFilters .chip");
   var projects=["ALL"].concat(uniq(currentExp().map(function(i){return i.project;})));

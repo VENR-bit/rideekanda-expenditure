@@ -21,7 +21,7 @@ Hosted on GitHub Pages from the `docs/` folder (main branch).
 | Rideekanda | Library Cafe | `1A_S8aJV3_UKn9jD0atazr1elKibUfUmMQ3aJI1r6uRE` |
 | Rideekanda | Wall Construction | `19bDSzAcuBuoFeibXvVQzve-W_bhMDIy6dhI4KERYXE0` (live, done June 2026) |
 | Rideekanda | Cacilia's Kuty | fixed Rs 900,082 (June 2026) — see note below; clean sheet pending |
-| Brother's Lands | Building Construction + Maligawa / Sinnakkara / Homagama lands | `16iggcw0Bgw9sW4eM5BNMkPPgqR2lJIYbWo6En7objrE` |
+| Brother's Land | Building Construction **only** (the "Income and Expenditure" tab; other tabs ignored) | `16iggcw0Bgw9sW4eM5BNMkPPgqR2lJIYbWo6En7objrE` |
 
 ## How it works
 `apps-script/Code.gs` is a Google Apps Script web app. Its `doGet` opens the
@@ -77,12 +77,13 @@ the file). It reloads live data every time you open or hit **Refresh**.
 - The Building tab's payments are grouped into blocks that end with a
   "BALANCE AS AT <date>" row; undated items in a block inherit that block's date.
   Real payments with no description (e.g. Rs 50,000 on 4.3.2026) are still counted.
-- **Income (Brother's Lands)** is taken **only** from the Building sheet's Income
-  column (the master cash book — includes capital, a returned loan, and produce
-  income transferred in). The separate INCOME tab and the land tabs' inline
-  "Income (coconut harvest)" notes are **deliberately not counted**, because the
-  same produce sales appear in the Building column and would double-count.
-  Donations (Library Cafe) are counted separately and don't overlap.
+- **Brother's Land counts only the Building (Income & Expenditure) tab.** By the
+  owner's decision, every other tab in that spreadsheet — the land tabs
+  (Maligawa / Sinnakkara / Homagama) and the separate INCOME tab — is ignored.
+  Building income comes from the Building tab's own Income column (its master cash
+  book: capital, a returned loan, and produce income transferred in). This is
+  enforced in both `Code.gs` (`parseBrothersTab`) and `docs/index.html`
+  (`allItems()`), so it holds even before the backend is redeployed.
 - If a figure looks off, open the **Line items (audit)** section — every number
   traces back to a sheet row. The JSON also carries a `debug` array showing how
   each tab was classified.

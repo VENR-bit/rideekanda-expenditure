@@ -337,14 +337,14 @@ function parseBrothersTab(rows, sheetName, src, items) {
   var isIncome = /income/i.test(headText) && !hasCostPaid && !hasAcc;
   var isHomagama = /homagama/i.test(headText);
 
+  // Owner's decision: the Brother's Land account counts ONLY the Building
+  // (Income & Expenditure) sheet. Every other tab in this spreadsheet — the land
+  // tabs (Maligawa / Sinnakkara / Homagama) and the INCOME tab — is ignored.
   if (hasAcc) { parseBuilding(rows, src, items); return 'building'; }
-  if (hasCostPaid) { parseLand(rows, titleName, src, items); return 'land:' + titleName; }
-  // INCOME tab is intentionally NOT counted: the same produce sales are already in
-  // the Building sheet's Income column (the chosen source of truth), so counting the
-  // INCOME tab too would double-count. Leave it out.
-  if (isIncome) { return 'income-tab-skipped'; }
-  if (isHomagama) { parseSimpleLedger(rows, titleName, src, items, 'expense'); return 'homagama'; }
-  return 'unrecognised';
+  if (hasCostPaid) { return 'land-ignored:' + titleName; }
+  if (isIncome) { return 'income-tab-ignored'; }
+  if (isHomagama) { return 'homagama-ignored'; }
+  return 'ignored';
 }
 
 function topText(rows) {
