@@ -39,6 +39,11 @@ var SOURCES = [
   { id: '1XlL45RkzzVIYQDt2v0GRlVrqq9jpAAaC4j-lbc4Qkhs',
     site: 'Rideekanda', project: "Cacilia's Kuty", type: 'cacilia', defaultDate: '2026-06-01' },
 
+  // Road Construction — same ledger layout as Wall (expenses col D, INCOME col 6).
+  { id: '12Ob_pV856_R2MDmj82HSscQEo8npLxadPF7NmNEmOFI',
+    site: 'Rideekanda', project: 'Road Construction', type: 'ledger',
+    amountCol: 3, descCol: 0, dateCol: null, incomeCol: 6, defaultDate: '2026-08-01' },
+
   { id: '16iggcw0Bgw9sW4eM5BNMkPPgqR2lJIYbWo6En7objrE',
     site: "Brother's Lands", project: null, type: 'brothers' }
 ];

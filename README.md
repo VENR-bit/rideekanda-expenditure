@@ -20,7 +20,8 @@ Hosted on GitHub Pages from the `docs/` folder (main branch).
 |------|---------|--------------|
 | Rideekanda | Library Cafe | `1A_S8aJV3_UKn9jD0atazr1elKibUfUmMQ3aJI1r6uRE` |
 | Rideekanda | Wall Construction | `19bDSzAcuBuoFeibXvVQzve-W_bhMDIy6dhI4KERYXE0` (live, done June 2026) |
-| Rideekanda | Cacilia's Kuty | fixed Rs 900,082 (June 2026) — see note below; clean sheet pending |
+| Rideekanda | Cacilia's Kuty | `1XlL45RkzzVIYQDt2v0GRlVrqq9jpAAaC4j-lbc4Qkhs` (live) |
+| Rideekanda | Road Construction | `12Ob_pV856_R2MDmj82HSscQEo8npLxadPF7NmNEmOFI` (live, same ledger layout as Wall) |
 | Brother's Land | Building Construction **only** (the "Income and Expenditure" tab; other tabs ignored) | `16iggcw0Bgw9sW4eM5BNMkPPgqR2lJIYbWo6En7objrE` |
 
 ## How it works
