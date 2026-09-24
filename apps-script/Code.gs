@@ -30,7 +30,10 @@ var SOURCES = [
   // No per-row date, so undated rows are stamped defaultDate.
   { id: '19bDSzAcuBuoFeibXvVQzve-W_bhMDIy6dhI4KERYXE0',
     site: 'Rideekanda', project: 'Wall Construction', type: 'ledger',
-    amountCol: 3, descCol: 0, dateCol: null, incomeCol: 6, defaultDate: '2026-06-01' },
+    amountCol: 3, descCol: 0, dateCol: null, incomeCol: 6, defaultDate: '2026-06-01',
+    // this spreadsheet has more than one tab — map each tab to its own project.
+    tabProjects: { 'WALL constructions': 'Wall Construction',
+                   'GENERAL Maintenance': 'General Maintenance' } },
 
   // Cacilia's Kuty — its BOQ sheet (1XlL45...) now has a proper "EXPENDITURE" block
   // with per-line totals plus a G/TOTAL and a DONATIONS column, so it is read LIVE.
@@ -103,7 +106,7 @@ function buildPayload() {
       var before = items.length;
       var kind = 'skipped';
       if (src.type === 'kuty') { kind = 'kuty'; parseKuty(rows, src, items); }
-      else if (src.type === 'ledger') { kind = 'ledger'; parseLedger(rows, src, items); }
+      else if (src.type === 'ledger') { kind = 'ledger'; parseLedger(rows, src, items, sh.getName()); }
       else if (src.type === 'cacilia') { kind = 'cacilia'; parseCacilia(rows, src, items); }
       else { kind = parseBrothersTab(rows, sh.getName(), src, items); }
 
@@ -225,9 +228,11 @@ function push(items, src, tab, kind, date, desc, amount, note) {
 // Config on the source: amountCol (default 3), descCol (default 0),
 // dateCol (or null), defaultDate (used when a row carries no date).
 // Total / subtotal rows (blank description, or "TOTAL"/"Balance" text) are skipped.
-function parseLedger(rows, src, items) {
+function parseLedger(rows, src, items, tabName) {
   var amountCol = (src.amountCol != null) ? src.amountCol : 3;
   var descCol = (src.descCol != null) ? src.descCol : 0;
+  var project = ledgerProject(src, tabName);   // one project per tab (see tabProjects)
+  var proj = { site: src.site };
   for (var r = 0; r < rows.length; r++) {
     var row = rows[r];
     var desc = txt(row[descCol]);
@@ -236,7 +241,7 @@ function parseLedger(rows, src, items) {
     if (low(desc) === 'description' || low(desc) === 'item') continue; // header
     var date = (src.dateCol != null ? parseDateStr(row[src.dateCol]) : null)
       || rowDate(row) || src.defaultDate || null;
-    push(items, src, src.project, 'expense', date, desc, amt, txt(row[4]));
+    pushProj(items, proj, src, project, 'expense', date, desc, amt, txt(row[4]));
   }
 
   // optional single INCOME total (first positive number in the income column)
@@ -244,11 +249,22 @@ function parseLedger(rows, src, items) {
     for (var k = 0; k < rows.length; k++) {
       var iv = parseAmount(rows[k][src.incomeCol]);
       if (iv !== null && iv > 0) {
-        push(items, src, src.project, 'income', null, 'Income (received)', iv, '');
+        pushProj(items, proj, src, project, 'income', null, 'Income (received)', iv, '');
         break;
       }
     }
   }
+}
+
+// Resolve which project a ledger tab belongs to. With src.tabProjects, each tab
+// name maps to its own project; otherwise everything is src.project.
+function ledgerProject(src, tabName) {
+  if (src.tabProjects && tabName) {
+    var tn = low(tabName), key;
+    for (key in src.tabProjects) { if (low(key) === tn) return src.tabProjects[key]; }
+    for (key in src.tabProjects) { if (tn.indexOf(low(key)) >= 0) return src.tabProjects[key]; }
+  }
+  return src.project;
 }
 
 // ---- parser: Cacilia's Kuty ------------------------------------------------

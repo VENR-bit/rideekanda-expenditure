@@ -22,6 +22,7 @@ Hosted on GitHub Pages from the `docs/` folder (main branch).
 | Rideekanda | Wall Construction | `19bDSzAcuBuoFeibXvVQzve-W_bhMDIy6dhI4KERYXE0` (live, done June 2026) |
 | Rideekanda | Cacilia's Kuty | `1XlL45RkzzVIYQDt2v0GRlVrqq9jpAAaC4j-lbc4Qkhs` (live) |
 | Rideekanda | Road Construction | `12Ob_pV856_R2MDmj82HSscQEo8npLxadPF7NmNEmOFI` (live, same ledger layout as Wall) |
+| Rideekanda | General Maintenance | `19bDSz…` **GENERAL Maintenance** tab (same spreadsheet as Wall; `tabProjects` maps each tab to its own project) |
 | Brother's Land | Building Construction **only** (the "Income and Expenditure" tab; other tabs ignored) | `16iggcw0Bgw9sW4eM5BNMkPPgqR2lJIYbWo6En7objrE` |
 
 ## How it works
